@@ -1,0 +1,22 @@
+# Environment
+: "${ENVIRONMENT:=DEV}"
+export ENVIRONMENT
+
+# Database
+export DB_USER=""
+export DB_PASSWORD=""
+export DB_HOST=""
+export DB_PORT="5432"
+export DB_NAME="chatterbox"
+export DATABASE_URL="postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+
+# AWS
+export AWS_PAGER=""
+export AWS_PROFILE="chatterbox"
+export COGNITO_USER_POOL_ID=""
+export COGNITO_CLIENT_ID=""
+export AWS_REGION=""
+
+# (For ease of local testing) Backend user login details for Authentication with Cognito
+export username=''
+export password=''
