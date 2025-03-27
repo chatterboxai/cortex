@@ -1,15 +1,9 @@
 from datetime import datetime, timezone
 import uuid
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import MappedAsDataclass
 from sqlalchemy import DateTime
-
-
-class Base(MappedAsDataclass, DeclarativeBase):
-    """Base class for all models"""
-    pass
+from app.models.base import Base
 
 
 class User(Base):
