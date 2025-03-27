@@ -1,0 +1,19 @@
+## Database
+
+### Migrations with Alembic
+
+We use SQLAlchemy for ORM and Alembic for database migrations:
+
+- Models are defined in `app/models/`
+- To create a new migration after model changes:
+  ```
+  alembic revision --autogenerate -m "Description of changes"
+  ```
+- To apply migrations:
+  ```
+  alembic upgrade head
+  ```
+- To downgrade to a previous migration:
+  ```
+  alembic downgrade -1  # or specific revision ID
+  ```

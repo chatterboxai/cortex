@@ -1,6 +1,12 @@
 # chatterbox-backend
 
-This is the backend for the Chatterbox project. Uses FastAPI as the backend framework and Prisma as the ORM.
+This is the backend for the Chatterbox project. Uses FastAPI as the backend framework and SQLAlchemy as the ORM.
+
+## Set up environment variables
+
+- `cp .envrc.example .envrc`
+- `direnv allow .`
+  Fill in the environment variables in the `.envrc` file.
 
 ## Installation
 
@@ -19,12 +25,4 @@ This is the backend for the Chatterbox project. Uses FastAPI as the backend fram
   - `source .venv/bin/activate`
 - Load the environment variables using direnv. Install direnv if you don't have it [here](https://direnv.net/docs/installation.html)
   - `direnv allow .`
-- `uvicorn app.main:app --reload` to start the development server
-
-## Prisma
-
-### Updating the schema
-
-- Edit the schema in `prisma/schema.prisma`
-- Run `prisma db push` to generate the Prisma client and push the schema to the database
-- Run `prisma generate` to update the schema to the Prisma client i.e. to have the latest types for the client for code completion while developing
+- `uv run uvicorn app.main:app --reload` to start the development server
