@@ -6,7 +6,12 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from app.models.base import Base
+
+# Import all models to ensure they're registered with Base.metadata
+# These imports must happen before accessing Base.metadata
+from app.models.base import Base  
+# These imports are needed to register models with Base.metadata even if not used directly
+from app.models import *  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
