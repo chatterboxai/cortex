@@ -26,11 +26,16 @@ class Dialogue(Base):
     answer: Mapped[str] = mapped_column(String(255), nullable=False)
     chatbot_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('chatbots.id'),
                                                   nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),
-                                                 nullable=False,
-                                                 default_factory=datetime.now(timezone.utc), init=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),
-                                                 nullable=False, default_factory=datetime.now(timezone.utc), init=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default_factory=lambda: datetime.now(timezone.utc),
+        init=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default_factory=lambda: datetime.now(timezone.utc),
+        init=False)
 
     # Set init=False for the relationship so it doesn't need to be in __init__
     chatbot: Mapped['Chatbot'] = relationship(back_populates='dialogues', init=False)

@@ -3,7 +3,7 @@ from sqlalchemy import String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import UUID
 import uuid
 from app.models.base import Base
 from typing import TYPE_CHECKING
@@ -25,7 +25,7 @@ class Chatbot(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(String(255), nullable=True)
-    owner_id: Mapped[str] = mapped_column(
+    owner_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey('users.id'),
         nullable=False
     )
@@ -33,13 +33,13 @@ class Chatbot(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
         nullable=False, 
-        default_factory=datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(timezone.utc),
         init=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
         nullable=False, 
-        default_factory=datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(timezone.utc),
         init=False
     )
 

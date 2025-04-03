@@ -9,9 +9,7 @@ from alembic import context
 
 # Import all models to ensure they're registered with Base.metadata
 # These imports must happen before accessing Base.metadata
-from app.models.base import Base  
-# These imports are needed to register models with Base.metadata even if not used directly
-from app.models import *  # noqa
+from app.models.base import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
