@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from app.auth.middleware import CognitoAuthMiddleware
 from app.routers import users
 from app.routers import chatbot
+from app.routers import dialogues
 from app.core.logging import setup_logging
 from app.db.client import engine
 from app.db.client import async_session_factory
@@ -61,7 +62,7 @@ app.add_middleware(
 # Include routers
 app.include_router(users.router)
 app.include_router(chatbot.router)
-
+app.include_router(dialogues.router)
 
 @app.get('/')
 async def read_root():
