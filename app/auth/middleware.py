@@ -6,7 +6,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.base import RequestResponseEndpoint
 from starlette.responses import JSONResponse
 
-from app.auth.cognito import extract_token_from_header
 from app.auth.cognito import verify_cognito_token
 from cognitojwt import CognitoJWTException
 
@@ -24,15 +23,6 @@ class CognitoAuthMiddleware(BaseHTTPMiddleware):
         exclude_paths: List[str] = None,
         exclude_methods: List[str] = None,
     ):
-        """
-        Initialize the middleware.
-        
-        Args:
-            app: The FastAPI application
-            exclude_paths: List of paths to exclude from authentication
-            exclude_methods: List of HTTP methods to exclude from
-                authentication
-        """
         super().__init__(app)
         self.exclude_paths = exclude_paths or []
         self.exclude_methods = exclude_methods or []
@@ -40,16 +30,6 @@ class CognitoAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        """
-        Process the request and validate JWT token if required.
-        
-        Args:
-            request: The incoming request
-            call_next: The next middleware or endpoint handler
-            
-        Returns:
-            The response from the next middleware or endpoint
-        """
         # Skip authentication for excluded paths and methods
         path = request.url.path
         method = request.method
@@ -59,7 +39,21 @@ class CognitoAuthMiddleware(BaseHTTPMiddleware):
             
         # Get token from header
         auth_header = request.headers.get('Authorization')
-        token = extract_token_from_header(auth_header)
+        if not auth_header:
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={'detail': 'Missing authentication token'},
+            )
+
+        parts = auth_header.split()
+
+        if len(parts) != 2 or parts[0].lower() != "bearer":
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={'detail': 'Invalid authentication token'},
+            )
+
+        token = parts[1]
         
         if not token:
             return JSONResponse(
@@ -68,17 +62,20 @@ class CognitoAuthMiddleware(BaseHTTPMiddleware):
             )
             
         try:
-            # Verify and decode the token
             claims = await verify_cognito_token(token)
             
+            # Store the claims in request state for use in dependencies
             request.state.claims = claims
 
             return await call_next(request)
             
         except CognitoJWTException as e:
+            logger.warning(f'JWT validation failed: {str(e)}')
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                content={'detail': e.args},
+                content={
+                    'detail': 'Invalid or expired authentication token'
+                },
             )
         except Exception as e:
             logger.exception(f'Unexpected error in auth middleware: {e}')
