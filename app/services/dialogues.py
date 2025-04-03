@@ -1,13 +1,15 @@
 from typing import Sequence
 import uuid
+from app.models.chatbot import Chatbot
+from app.models.users import User
 from sqlalchemy import select
 
 from app.models.dialogue import Dialogue
 from app.db.client import async_session_factory
+from sqlalchemy.orm import selectinload
 
 
 async def create_dialogue(
-        user_id: str,
         chatbot: uuid.UUID,
         name: str,
         questions: list[str],
@@ -15,11 +17,10 @@ async def create_dialogue(
     ):
     async with async_session_factory() as session:
         dialogue = Dialogue(
-            user_id,
-            chatbot,
-            name,
-            questions,
-            answer
+            chatbot_id=chatbot,
+            name=name,
+            questions=questions,
+            answer=answer
         )
         session.add(dialogue)
         await session.commit()
@@ -49,7 +50,7 @@ async def find_answer_by_question(question:str, chatbot_id: uuid.UUID) -> Dialog
             query = (
             select(Dialogue)
             .where(Dialogue.chatbot_id == chatbot_id)
-            .where(Dialogue.question.in_(Dialogue.questions))  # Filter by question list
+            .where(Dialogue.questions.any(question))  # Filter by question list
         )
             result = await session.execute(query)
             return result.scalar_one_or_none()

@@ -26,3 +26,11 @@ This is the backend for the Chatterbox project. Uses FastAPI as the backend fram
 - Load the environment variables using direnv. Install direnv if you don't have it [here](https://direnv.net/docs/installation.html)
   - `direnv allow .`
 - `uv run uvicorn app.main:app --reload` to start the development server
+
+- use the following to get a cognito token
+- aws cognito-idp initiate-auth \
+  --auth-flow USER_PASSWORD_AUTH \
+  --client-id ${COGNITO_CLIENT_ID} \
+  --auth-parameters USERNAME=${username},PASSWORD=${password} \
+  --query 'AuthenticationResult.AccessToken' \
+ --output text

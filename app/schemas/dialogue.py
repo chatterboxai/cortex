@@ -19,11 +19,13 @@ class DialogueResponse(BaseModel):
     created_at: Annotated[datetime, Field(description='The date and time the dialogue was created')]
     updated_at: Annotated[datetime, Field(description='The date and time the dialogue was last updated')]
     
-    model_config = ConfigDict(from_attributes=True)
-
+    class Config:
+        orm_mode = True  # This ensures proper serialization of SQLAlchemy model results
+        
 class DialogueGetAllFromChatbotResponse(BaseModel):
     dialogues: Annotated[list[DialogueResponse], Field(description='The list of dialogues for the chatbot')]
-    
+    class Config:
+        orm_mode = True  # This ensures proper serialization of SQLAlchemy model results
 # class DialogueGetAllFromUserResponse(BaseModel):
 #     dialogues: Annotated[list[DialogueResponse], Field(description='The list of dialogues for the chatbot')]
 

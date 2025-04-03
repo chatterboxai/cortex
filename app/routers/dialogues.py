@@ -16,15 +16,11 @@ logger = logging.getLogger(__name__)
 router = APIRouter(
     prefix="/dialogues",
     tags=["dialogues"],
-)
-security = HTTPBearer(
-    scheme_name="AWS Cognito JWT",
-    description="AWS Cognito JWT Bearer token",
-    auto_error=False
+    dependencies=[Depends(security)],
 )
 
 @router.post(
-    "/dialogue", 
+    "/", 
     response_model=DialogueResponse,
     summary="create Dialogue",
     description="creates the dialogue object"
@@ -34,7 +30,6 @@ async def create_dialogue_endpoint(
     user: Annotated[User, Depends(get_authenticated_user)]
 ):
     new_dialogue = await create_dialogue(
-        user_id=user.id,
         chatbot=dialogue_data.chatbot_id,
         name=dialogue_data.name,
         questions=dialogue_data.questions,
@@ -45,7 +40,7 @@ async def create_dialogue_endpoint(
 
 
 @router.get(
-    "/dialogue/{dialogue_id}", 
+    "/{dialogue_id}", 
     response_model=DialogueResponse,
     summary="Get Dialogue",
     description="find the dialogue object using id"
@@ -59,7 +54,7 @@ async def find_dialogue_endpoint(
 
 
 @router.get(
-    "/dialogue/chatbot/{chatbot_id}", 
+    "/chatbot/{chatbot_id}", 
     response_model=DialogueGetAllFromChatbotResponse,
     summary="Get Dialogue",
     description="find the dialogue object using id"
@@ -72,7 +67,7 @@ async def find_dialogue_by_chatbot_endpoint(
     return dialogues
 
 @router.get(
-    "/dialogue/question/{question}/{chatbot_id}", 
+    "/question/{question}/{chatbot_id}", 
     response_model=DialogueAnswerResponse,
     summary="Get Dialogue answer to question",
     description="find answer to the question from the dialogue object using chatbot"
@@ -83,7 +78,7 @@ async def find_dialogue_answer_endpoint(
 ):
     dialogue = await find_answer_by_question(question, chatbot_id)
     
-    return dialogue.answer
+    return DialogueAnswerResponse(answer=dialogue.answer)
 
 # @router.get(
 #     "/dialogue/user", 
