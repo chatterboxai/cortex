@@ -4,7 +4,7 @@ import logging
 from app.auth.dependencies import get_authenticated_user
 from app.auth.dependencies import security
 from app.schemas.chatbot import (
-    ChatbotCreate, ChatbotCreateResponse, ChatbotCreateRequest
+    ChatbotCreate, ChatbotCreateResponse, ChatbotCreateRequest, ChatbotGetAllResponse
 )
 from app.models.users import User
 from app.services.chatbot import ChatbotService
