@@ -82,3 +82,14 @@ async def edit_dialogue(dialogue_id: uuid.UUID, questions: list[str], answer: st
             return dialogue
             
             
+async def delete_dialogue_by_id(dialogue_id: uuid.UUID) -> Dialogue:
+    async with async_session_factory() as session:
+            query = (
+            select(Dialogue)
+            .where(Dialogue.id == dialogue_id)
+        )
+            result = await session.execute(query)
+            dialogue =  result.scalar_one_or_none()
+            await session.delete(dialogue)
+            await session.commit()
+            return dialogue

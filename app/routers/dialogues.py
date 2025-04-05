@@ -6,7 +6,7 @@ import logging
 from app.schemas.dialogue import DialogueAnswerResponse, DialogueEditRequest, DialogueGetAllFromChatbotResponse, DialogueResponse, DialogueCreateRequest
 from app.auth.dependencies import get_authenticated_user
 from app.auth.dependencies import security
-from app.services.dialogues import create_dialogue, edit_dialogue, find_answer_by_question, find_dialogue_by_chatbot, find_dialogue_by_id
+from app.services.dialogues import create_dialogue, delete_dialogue_by_id, edit_dialogue, find_answer_by_question, find_dialogue_by_chatbot, find_dialogue_by_id
 from app.models.users import User
 #from app.services.dialogues import
 
@@ -66,6 +66,20 @@ async def find_dialogue_endpoint(
         questions = dialogue_data.questions,
         answer = dialogue_data.answer
     )
+    
+    return dialogue
+
+
+@router.delete(
+    "/{dialogue_id}", 
+    response_model=DialogueResponse,
+    summary="Get Dialogue",
+    description="find the dialogue object using id"
+)
+async def find_dialogue_endpoint(
+    dialogue_id: uuid.UUID
+):
+    dialogue = await delete_dialogue_by_id(dialogue_id)
     
     return dialogue
 
