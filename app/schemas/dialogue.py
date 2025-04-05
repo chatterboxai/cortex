@@ -9,6 +9,10 @@ class DialogueCreateRequest(BaseModel):
     answer: Annotated[str, Field(description="answer to dialogue questions")]
     chatbot_id: Annotated[uuid.UUID, Field(description="chatbot related to dialogue")]
     
+class DialogueEditRequest(BaseModel):
+    id: Annotated[uuid.UUID, Field(description="dialogue's uuid")]
+    questions: Annotated[list[str], Field(description="list of questions in dialogue")]
+    answer: Annotated[str, Field(description="answer to dialogue questions")]
     
 class DialogueResponse(BaseModel):
     id: Annotated[uuid.UUID, Field(description="dialogue's uuid")]

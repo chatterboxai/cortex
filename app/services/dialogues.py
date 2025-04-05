@@ -61,3 +61,24 @@ async def find_answer_by_question(question:str, chatbot_id: uuid.UUID) -> Dialog
 #             query = select(Dialogue).where(Dialogue._id == user_id)
 #             result = await session.execute(query)
 #             return result.scalars().all()
+
+
+async def edit_dialogue(dialogue_id: uuid.UUID, questions: list[str], answer: str) -> Dialogue:
+        """Find all dialogue belonging to chatbot"""
+        async with async_session_factory() as session:
+            query = (
+            select(Dialogue)
+            .where(Dialogue.id == dialogue_id)
+        )
+            result = await session.execute(query)
+            dialogue =  result.scalar_one_or_none()
+            
+            dialogue.questions = questions
+            dialogue.answer = answer
+
+            await session.commit()
+            await session.refresh(dialogue)
+
+            return dialogue
+            
+            
