@@ -1,10 +1,11 @@
 from typing import Annotated
+import uuid
 from fastapi import APIRouter, Body, Depends
 import logging
 from app.auth.dependencies import get_authenticated_user
 from app.auth.dependencies import security
 from app.schemas.chatbot import (
-    ChatbotCreate, ChatbotCreateResponse, ChatbotCreateRequest, ChatbotGetAllResponse
+    ChatbotBaseResponse, ChatbotCreate, ChatbotCreateResponse, ChatbotCreateRequest, ChatbotGetAllResponse
 )
 from app.models.users import User
 from app.services.chatbot import ChatbotService
@@ -55,3 +56,14 @@ async def get_all_chatbots(
     chatbots = await ChatbotService.find_all(user.id)
     return ChatbotGetAllResponse(chatbots=chatbots)
 
+@router.get(
+    '/{chatbot_id}',
+    response_model=ChatbotBaseResponse,
+    summary='Get chatbot by id',
+    description='Get chatbot by given id.'
+)
+async def get_chatbots_by_id(
+    chatbot_id: uuid.UUID
+):
+    chatbot = await ChatbotService.find_by_id(str(chatbot_id))
+    return chatbot
