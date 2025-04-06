@@ -1,6 +1,7 @@
 # Use postgres/example user/password credentials
 volumes:
   chatterbox_data:
+  redis_data:
 
 services:
   db:
@@ -15,3 +16,17 @@ services:
 
     ports:
       - 5432:5432
+
+  redis:
+    image: redis:7.0.5
+    container_name: chatterbox-redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
