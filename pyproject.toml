@@ -10,4 +10,5 @@ dependencies = [
     "asyncpg",
     "alembic",
     "cognitojwt[async]",
+    "slowapi>=0.1.6"
 ]
