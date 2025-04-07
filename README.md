@@ -29,8 +29,15 @@ This is the backend for the Chatterbox project. Uses FastAPI as the backend fram
 
 - use the following to get a cognito token
 - aws cognito-idp initiate-auth \
-  --auth-flow USER_PASSWORD_AUTH \
-  --client-id ${COGNITO_CLIENT_ID} \
+   --auth-flow USER_PASSWORD_AUTH \
+   --client-id ${COGNITO_CLIENT_ID} \
   --auth-parameters USERNAME=${username},PASSWORD=${password} \
-  --query 'AuthenticationResult.AccessToken' \
- --output text
+   --query 'AuthenticationResult.AccessToken' \
+  --output text
+
+## Running Celery
+
+Celery beat is a scheduler that syncs documents uploaded to the vector store at a given interval.
+
+- `celery -A app.core.celery worker --loglevel=info` to start the celery worker
+- `celery -A app.core.celery beat --loglevel=info` to start the celery beat

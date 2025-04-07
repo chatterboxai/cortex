@@ -1,0 +1,5 @@
+# Default settings for chatbots
+embedding_model:
+  provider: "openai"
+  name: "text-embedding-3-large"
+  dimensions: 3072

@@ -13,7 +13,9 @@ from app.routers import chat
 from app.routers import chatbot
 from app.routers import dialogues
 
+from app.routers import document
 from app.core.logging import setup_logging
+from app.core.celery import celery_app
 from app.db.client import engine, async_session_factory
 
 from slowapi.errors import RateLimitExceeded
@@ -79,7 +81,8 @@ app.add_middleware(
 app.include_router(users.router)
 app.include_router(chat.router)
 app.include_router(chatbot.router)
-app.include_router(dialogues.router)
+app.include_router(dialogues.router)app.include_router(document.router)
+
 
 @app.get('/')
 async def read_root():

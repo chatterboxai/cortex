@@ -1,9 +1,11 @@
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from typing import Sequence
 from app.models.chatbot import Chatbot
-from app.db.client import async_session_factory
+from app.db.client import async_session_factory, sync_session_factory
 from app.schemas.chatbot import ChatbotCreate
 import uuid
+
 
 class ChatbotService:
     """Service for chatbot related operations."""
@@ -16,7 +18,8 @@ class ChatbotService:
                 name=c.name,
                 description=c.description,
                 owner_id=c.owner_id,
-                is_public=c.is_public
+                is_public=c.is_public,
+                settings=c.settings.model_dump()
             )
             session.add(chatbot)
             await session.commit()
@@ -32,14 +35,44 @@ class ChatbotService:
             return result.scalars().all()
 
     @staticmethod
-    async def find_by_id(id: str) -> Chatbot:
+    async def afind_by_id(id: uuid.UUID,
+                         load_owner: bool = False,
+                         load_documents: bool = False,
+                         load_dialogues: bool = False) -> Chatbot | None:
         """Find a chatbot by its ID."""
         async with async_session_factory() as session:
-            chatbot = await session.get(Chatbot, id)
-            return chatbot
-
+            query = select(Chatbot)
+            if load_owner:
+                query = query.options(selectinload(Chatbot.owner))
+            if load_documents:
+                query = query.options(selectinload(Chatbot.documents))
+            if load_dialogues:
+                query = query.options(selectinload(Chatbot.dialogues))
+            query = query.where(Chatbot.id == id)
+            result = await session.execute(query)
+            return result.scalar_one_or_none()
+        
     @staticmethod
-    async def find_by_owner(owner_id: str) -> Chatbot:
+    def find_by_id(
+        id: uuid.UUID,
+        load_owner: bool = False,
+        load_documents: bool = False,
+        load_dialogues: bool = False) -> Chatbot | None:
+        
+        with sync_session_factory() as session:
+            query = select(Chatbot)
+            if load_owner:
+                query = query.options(selectinload(Chatbot.owner))
+            if load_documents:
+                query = query.options(selectinload(Chatbot.documents))
+            if load_dialogues:
+                query = query.options(selectinload(Chatbot.dialogues))
+            query = query.where(Chatbot.id == id)
+            result = session.execute(query)
+            return result.scalar_one_or_none()
+        
+    @staticmethod
+    async def find_by_owner(owner_id: uuid.UUID) -> Chatbot:
         """Find a chatbot by its owner ID."""
         async with async_session_factory() as session:
             query = select(Chatbot).where(Chatbot.owner_id == owner_id)

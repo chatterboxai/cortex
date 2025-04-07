@@ -2,4 +2,4 @@
 .venv
 __pycache__
 
-alembic/versions
+celerybeat-schedule.db

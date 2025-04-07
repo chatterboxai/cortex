@@ -1,6 +1,8 @@
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 import os
 import logging
@@ -13,6 +15,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", "")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set")
 
+# Create async engine for FastAPI
 engine = create_async_engine(
     DATABASE_URL,
     pool_size=5,                # Default connections in pool
@@ -23,8 +26,30 @@ engine = create_async_engine(
     echo=False                  # Set to True for SQL query logging
 )
 
+# Create a synchronous engine for Celery tasks
+# Convert asyncpg URL to psycopg URL if needed
+SYNC_DATABASE_URL = DATABASE_URL
+if '+asyncpg' in SYNC_DATABASE_URL:
+    SYNC_DATABASE_URL = SYNC_DATABASE_URL.replace('+asyncpg', '')
+
+sync_engine = create_engine(
+    SYNC_DATABASE_URL,
+    pool_size=5,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_recycle=1800,
+    pool_pre_ping=True,
+    echo=False
+)
+
 async_session_factory = async_sessionmaker(
     engine, 
     expire_on_commit=False, 
     class_=AsyncSession
+)
+
+# Create a synchronous session factory
+sync_session_factory = sessionmaker(
+    sync_engine,
+    expire_on_commit=False
 )

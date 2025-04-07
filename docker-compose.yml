@@ -30,3 +30,62 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  #   api:
+  #     build: .
+  #     ports:
+  #       - "8000:8000"
+  #     volumes:
+  #       - ./app:/app/app
+  #     depends_on:
+  #       - redis
+  #     environment:
+  #       - REDIS_URL=redis://redis:6379/0
+  #       - DATABASE_URL=${DATABASE_URL}
+  #       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+  #       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+  #       - AWS_REGION=${AWS_REGION}
+  #       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+  #       - ENVIRONMENT=DEV
+  #     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # celery_worker:
+  #   build: .
+  #   depends_on:
+  #     - redis
+  #     - db
+  #   volumes:
+  #     - ./app:/app/app
+  #   environment:
+  #     - REDIS_URL=redis://redis:6379/0
+  #     - DATABASE_URL=${DATABASE_URL}
+  #     - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+  #     - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+  #     - AWS_REGION=${AWS_REGION}
+  #     - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+  #     - ENVIRONMENT=DEV
+  #   command: celery -A app.core.celery:celery_app worker --loglevel=info
+
+  # celery_beat:
+  #   build: .
+  #   depends_on:
+  #     - redis
+  #     - db
+  #     - celery_worker
+  #   volumes:
+  #     - ./app:/app/app
+  #   environment:
+  #     - REDIS_URL=redis://redis:6379/0
+  #     - DATABASE_URL=${DATABASE_URL}
+  #     - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+  #     - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+  #     - AWS_REGION=${AWS_REGION}
+  #     - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+  #     - ENVIRONMENT=DEV
+  #   command: celery -A app.core.celery:celery_app beat --loglevel=info
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
