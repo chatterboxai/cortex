@@ -11,6 +11,9 @@ from app.models.users import User
 from app.services.chatbot import ChatbotService
 from app.config.settings import load_default_chatbot_settings
 from app.services.rag.vectorstore import VectorStoreService
+import asyncio
+from fastapi.responses import StreamingResponse
+
 logger = logging.getLogger(__name__)
 
 # Define router
@@ -88,13 +91,26 @@ async def get_chatbots_by_id(
     chatbot = ChatbotService.find_by_id(str(chatbot_id))
     return chatbot
 
-@router.get(
-    '/test',
+
+# Testing endpoint
+async def streamer():
+    # Sends an event every second with data: "Message {i}"
+    message = ""
+    streamed_words = ["Hello", "world", "this", "is", "a", "test."]
+    for word in streamed_words:
+        message += ' ' + word
+        event_name = 'event: stream_chat'
+        event_data = f'data: {message}'
+        yield f'{event_name}\n{event_data}\n\n'
+        await asyncio.sleep(1)
+
+
+@router.post(
+    '/chat',
+    summary='Chat with chatbot',
+    description='Chat with chatbot by given id.'
 )
-async def get_chatbot_settings_test(
-    user: Annotated[User, Depends(get_authenticated_user)],
-):
-    settings = load_default_chatbot_settings()
-    model_dump = settings.model_dump()
-    logger.info(f'Settings: {model_dump}')
-    return model_dump
+async def streaming_test():
+    return StreamingResponse(
+        streamer(), media_type='text/event-stream', headers={'Content-Encoding': 'none'}
+    )
