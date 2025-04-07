@@ -33,13 +33,6 @@ router = APIRouter(
     ),
 )
 async def get_or_create_user_profile(
-    user: Annotated[User | None, Depends(get_authenticated_user)],
-    cognito_claims: Annotated[CognitoClaims, Depends(get_cognito_claims)],
+    user: Annotated[User, Depends(get_authenticated_user)],
 ):
-    if not user:
-        user = await create_user(
-            cognito_id=cognito_claims.sub,
-            handle=cognito_claims.username,
-        )
-    
     return user

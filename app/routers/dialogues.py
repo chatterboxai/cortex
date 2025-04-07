@@ -95,7 +95,7 @@ async def find_dialogue_by_chatbot_endpoint(
 ):
     dialogues = await find_dialogue_by_chatbot(chatbot_id)
     
-    return dialogues
+    return DialogueGetAllFromChatbotResponse(dialogues=dialogues)
 
 @router.get(
     "/question/{question}/{chatbot_id}", 

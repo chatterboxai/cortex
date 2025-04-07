@@ -1,12 +1,14 @@
 from datetime import datetime, timezone
-from sqlalchemy import String, DateTime, ForeignKey
+from sqlalchemy import JSON, String, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy import UUID
 import uuid
 from app.models.base import Base
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+from app.config.settings import load_default_chatbot_settings_dict
 
 if TYPE_CHECKING:
     from app.models.users import User
@@ -30,6 +32,11 @@ class Chatbot(Base):
         nullable=False
     )
     is_public: Mapped[bool] = mapped_column(nullable=False, default=False)
+    settings: Mapped[JSON] = mapped_column(
+        JSONB, 
+        nullable=False, 
+        default_factory=load_default_chatbot_settings_dict
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
         nullable=False, 
