@@ -15,12 +15,10 @@ from app.routers import dialogues
 
 from app.routers import document
 from app.core.logging import setup_logging
-from app.core.celery import celery_app
 from app.db.client import engine, async_session_factory
 
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
-from slowapi.util import get_remote_address
 from app.core.limiter import limiter
 from slowapi import _rate_limit_exceeded_handler
 
@@ -81,7 +79,8 @@ app.add_middleware(
 app.include_router(users.router)
 app.include_router(chat.router)
 app.include_router(chatbot.router)
-app.include_router(dialogues.router)app.include_router(document.router)
+app.include_router(dialogues.router)
+app.include_router(document.router)
 
 
 @app.get('/')
