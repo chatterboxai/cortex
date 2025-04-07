@@ -1,7 +1,7 @@
 # Use postgres/example user/password credentials
 volumes:
-  chatterbox_data:
-  redis_data:
+  chatterbox_data: {}
+  redis_data: {}
 
 services:
   db:
@@ -18,8 +18,7 @@ services:
       - 5432:5432
 
   redis:
-    image: redis:7.0.5
-    container_name: chatterbox-redis
+    image: redis:7-alpine
     restart: always
     volumes:
       - redis_data:/data
@@ -82,10 +81,3 @@ services:
   #     - S3_BUCKET_NAME=${S3_BUCKET_NAME}
   #     - ENVIRONMENT=DEV
   #   command: celery -A app.core.celery:celery_app beat --loglevel=info
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
