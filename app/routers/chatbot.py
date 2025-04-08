@@ -1,6 +1,8 @@
 from typing import Annotated
 import uuid
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, Request
+from pydantic import BaseModel
+from app.core.limiter import limiter
 import logging
 from app.auth.dependencies import get_authenticated_user
 from app.auth.dependencies import security
@@ -93,24 +95,60 @@ async def get_chatbots_by_id(
 
 
 # Testing endpoint
-async def streamer():
-    # Sends an event every second with data: "Message {i}"
-    message = ""
-    streamed_words = ["Hello", "world", "this", "is", "a", "test."]
-    for word in streamed_words:
-        message += ' ' + word
-        event_name = 'event: stream_chat'
-        event_data = f'data: {message}'
-        yield f'{event_name}\n{event_data}\n\n'
-        await asyncio.sleep(1)
+# async def streamer():
+#     # Sends an event every second with data: "Message {i}"
+#     message = ""
+#     streamed_words = ["Hello", "world", "this", "is", "a", "test."]
+#     for word in streamed_words:
+#         message += ' ' + word
+#         event_name = 'event: stream_chat'
+#         event_data = f'data: {message}'
+#         yield f'{event_name}\n{event_data}\n\n'
+#         await asyncio.sleep(1)
 
+
+# @router.post(
+#     '/chat',
+#     summary='Chat with chatbot',
+#     description='Chat with chatbot by given id.'
+# )
+# async def streaming_test():
+#     return StreamingResponse(
+#         streamer(), media_type='text/event-stream', headers={'Content-Encoding': 'none'}
+#     )
+
+
+
+
+# ---------------------- Streaming Chat -----------------------
+
+class ChatInput(BaseModel):
+    chatbot_id: str
+    message: str
 
 @router.post(
     '/chat',
-    summary='Chat with chatbot',
-    description='Chat with chatbot by given id.'
+    summary='Chat with chatbot (streamed)',
+    description='Stream chat response from the chatbot word by word.'
 )
-async def streaming_test():
+@limiter.limit("5/minute")  # ✅ Rate limit by IP
+async def stream_chat(request: Request, body: ChatInput):
+    user_message = body.message
+    chatbot_id = body.chatbot_id
+
+    # TODO: Replace this mock logic with RAG / dialogue matching
+    mock_response = "Singapore Management University is located at 81 Victoria St, Singapore 188065"
+    words = mock_response.split()
+
+    async def event_generator():
+        partial = ""
+        for word in words:
+            partial += word + " "
+            yield f"data: {partial.strip()}\n\n"
+            await asyncio.sleep(0.2)  # Simulate typing effect
+
     return StreamingResponse(
-        streamer(), media_type='text/event-stream', headers={'Content-Encoding': 'none'}
+        event_generator(),
+        media_type="text/event-stream",
+        headers={'Content-Encoding': 'none'}
     )
