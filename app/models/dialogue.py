@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
+from enum import Enum
 from sqlalchemy import ARRAY, String, DateTime, ForeignKey
+from sqlalchemy import Enum as SQLAlchemyEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -11,6 +13,11 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.chatbot import Chatbot
 
+class SyncStatus(str, Enum):
+    NA = 'NA'
+    IN_PROGRESS = 'IN_PROGRESS'
+    SYNCED = 'SYNCED'
+    FAILED = 'FAILED'
 
 class Dialogue(Base):
     __tablename__ = 'dialogues'
@@ -36,6 +43,11 @@ class Dialogue(Base):
         nullable=False,
         default_factory=lambda: datetime.now(timezone.utc),
         init=False)
-
+    sync_msg: Mapped[str] = mapped_column(nullable=True)
+    sync_status: Mapped[SyncStatus] = mapped_column(
+        SQLAlchemyEnum(SyncStatus),
+        default=SyncStatus.NA,
+        nullable=False
+    )
     # Set init=False for the relationship so it doesn't need to be in __init__
     chatbot: Mapped['Chatbot'] = relationship(back_populates='dialogues', init=False)

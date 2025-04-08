@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Annotated
+from app.models.dialogue import SyncStatus
 from pydantic import BaseModel, Field, ConfigDict
 import uuid
 
@@ -20,6 +21,7 @@ class DialogueResponse(BaseModel):
     questions: Annotated[list[str], Field(description="list of questions in dialogue")]
     answer: Annotated[str, Field(description="answer to dialogue questions")]
     chatbot_id: Annotated[uuid.UUID, Field(description="chatbot related to dialogue")]
+    sync_status: Annotated[SyncStatus, Field(description='The synchronization status of the document')]
     created_at: Annotated[datetime, Field(description='The date and time the dialogue was created')]
     updated_at: Annotated[datetime, Field(description='The date and time the dialogue was last updated')]
 

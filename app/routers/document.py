@@ -65,8 +65,10 @@ async def create_document(
     try:
         # upload to s3
         key = file.filename or str(uuid.uuid4())
+        print(f"Generated S3 key: {key}")
+
         await S3Service.upload_file(file, key)
-        
+        print("complete s3 upload")
         # create document
         document = await DocumentService.acreate(
             DocumentCreate(
