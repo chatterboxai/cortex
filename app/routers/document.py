@@ -6,7 +6,7 @@ import logging
 from uuid import UUID
 from app.auth.dependencies import get_authenticated_user, security
 from app.models.users import User
-from app.schemas.document import DocumentCreate
+from app.schemas.document import DocumentCreate, DocumentGetAllFromChatbotResponse
 from app.schemas.document import DocumentCreateResponse
 from app.schemas.document import DocumentBaseResponse
 
@@ -56,7 +56,11 @@ async def create_document(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User does not have permission to access this chatbot"
         )
-    
+    print("file.filename:", file.filename)
+    print("file.content_type:", file.content_type)
+    print("title:", title)
+    print("chatbot_id:", chatbot_id)
+
     # Create a document model and upload the file
     try:
         # upload to s3
@@ -81,6 +85,18 @@ async def create_document(
             detail=f"Error creating document: {str(e)}"
         )
 
+@router.get(
+    "/{chatbot_id}", 
+    response_model=DocumentGetAllFromChatbotResponse,
+    summary="Get Document by chatbot_id",
+    description="find the document object using chatbot_id"
+)
+async def find_document_by_chatbot_endpoint(
+    chatbot_id: uuid.UUID
+):
+    documents = await DocumentService.get_documents_by_chatbot_id(chatbot_id)
+    
+    return DocumentGetAllFromChatbotResponse(documents=documents)
 
 # @router.patch(
 #     '/{document_id}',

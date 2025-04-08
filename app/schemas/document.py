@@ -58,3 +58,6 @@ class DocumentCreate(BaseModel):
 class DocumentCreateResponse(DocumentBaseResponse):
     pass
 # endregion: Create Document 
+
+class DocumentGetAllFromChatbotResponse(BaseModel):
+    documents: Annotated[list[DocumentBaseResponse], Field(description='The list of dialogues for the chatbot')]

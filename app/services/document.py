@@ -42,7 +42,14 @@ class DocumentService:
         with sync_session_factory() as session:
             document = session.get(Document, document_id)
             return document
-    
+
+    @classmethod
+    async def get_documents_by_chatbot_id(cls, chatbot_id: uuid.UUID) -> list[Document]:
+        """Return a list of documents associated with the given chatbot_id."""
+        with sync_session_factory() as session:
+            documents = session.query(Document).filter(Document.chatbot_id == chatbot_id).all()
+            return documents
+
     @classmethod
     def update_sync_status(
         cls, 
