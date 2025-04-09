@@ -133,12 +133,12 @@ class ChatInput(BaseModel):
     chatbot_id: str
     message: str
 
-@router.post(
-    '/chat',
+@public_router.post(
+    '/chat-test',
     summary='Chat with chatbot (streamed)',
-    description='Stream chat response from the chatbot word by word.'
+    description='Stream chat response from the chatbot word by word with ratel limiting'
 )
-@limiter.limit("5/minute")  # ✅ Rate limit by IP
+@limiter.limit("2/minute")  # ✅ Rate limit by IP
 async def stream_chat(request: Request, body: ChatInput):
     user_message = body.message
     chatbot_id = body.chatbot_id
@@ -164,10 +164,12 @@ async def stream_chat(request: Request, body: ChatInput):
 @public_router.post(
     '/chat',
     summary='Chat with chatbot',
-    description='Chat with chatbot by given id.',
+    description='Chat with chatbot by given id. Rate limited to 2 requests per minute',
     response_model=None,
 )
+@limiter.limit("2/minute")
 async def chat_with_chatbot(
+    request: Request,
     chat_request: Annotated[ChatRequest, Body(...)],
 ):
     chatbot = ChatbotService.find_by_id(chat_request.chatbot_id)
