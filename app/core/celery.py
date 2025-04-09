@@ -31,13 +31,13 @@ celery_app.conf.update(
 
 # Set up Celery Beat schedule for recurring tasks
 celery_app.conf.beat_schedule = {
-    'process-documents-every-10-seconds': {
+    'find-documents-to-sync': {
         'task': 'app.tasks.documents.process_document_queue',
-        'schedule': 10.0,  # Run every 10 seconds
+        'schedule': 60.0,  # Run every 60 seconds
     },
-    'sync-dialogues-every-10-seconds': {
+    'find-dialogues-to-sync': {
         'task': 'app.tasks.dialogues.process_dialogue_queue',
-        'schedule': 10.0,  # Run every 10 seconds
+        'schedule': 60.0,  # Run every 60 seconds
     },
 }
 
