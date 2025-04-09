@@ -3,6 +3,7 @@ dependencies = [
     "fastapi[standard]",
     "sqlalchemy>=2.0.0",
     "asyncpg",
+    "psycopg[binary]",
     "alembic",
     "cognitojwt[async]",
     "slowapi>=0.1.6",

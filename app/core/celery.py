@@ -33,11 +33,11 @@ celery_app.conf.update(
 celery_app.conf.beat_schedule = {
     'process-documents-every-10-seconds': {
         'task': 'app.tasks.documents.process_document_queue',
-        'schedule': 10.0,  # Run every 10 seconds
+        'schedule': 60.0,  # Run every 10 seconds
     },
     'sync-dialogues-every-10-seconds': {
         'task': 'app.tasks.dialogues.process_dialogue_queue',
-        'schedule': 10.0,  # Run every 10 seconds
+        'schedule': 60.0,  # Run every 10 seconds
     },
 }
 
