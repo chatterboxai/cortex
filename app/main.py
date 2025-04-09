@@ -70,8 +70,8 @@ app.add_middleware(
 app.add_middleware(
     CognitoAuthMiddleware,
 
-    exclude_paths=["/docs", "/redoc", "/openapi.json", "/", "/health", "/health/db", "/chat"],
-    exclude_methods=["OPTIONS"],
+    exclude_paths=['/docs', '/redoc', '/openapi.json', '/', '/health', '/health/db', '/chat', '/api/v1/chatbots/public/chat'],
+    exclude_methods=['OPTIONS'],
 
 )
 
@@ -79,6 +79,7 @@ app.add_middleware(
 app.include_router(users.router)
 app.include_router(chat.router)
 app.include_router(chatbot.router)
+app.include_router(chatbot.public_router)
 app.include_router(dialogues.router)
 app.include_router(document.router)
 

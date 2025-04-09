@@ -1,20 +1,21 @@
 from typing import Annotated
 import uuid
-from fastapi import APIRouter, Body, Depends, Request
+from fastapi import APIRouter, Body, Depends, Request, HTTPException
 from pydantic import BaseModel
 from app.core.limiter import limiter
 import logging
 from app.auth.dependencies import get_authenticated_user
 from app.auth.dependencies import security
 from app.schemas.chatbot import (
-    ChatbotBaseResponse, ChatbotCreate, ChatbotCreateResponse, ChatbotCreateRequest, ChatbotGetAllResponse
+    ChatRequest, ChatbotBaseResponse, ChatbotCreate, ChatbotCreateResponse, ChatbotCreateRequest, ChatbotGetAllResponse
 )
 from app.models.users import User
 from app.services.chatbot import ChatbotService
-from app.config.settings import load_default_chatbot_settings
 from app.services.rag.vectorstore import VectorStoreService
 import asyncio
 from fastapi.responses import StreamingResponse
+import json
+from app.agents.qa import QaAgentWorkflow
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,12 @@ router = APIRouter(
     prefix='/api/v1/chatbots',
     tags=['chatbots'],
     dependencies=[Depends(security)],
+)
+
+# Define a separate router for unauthenticated endpoints
+public_router = APIRouter(
+    prefix='/api/v1/chatbots/public',
+    tags=['chatbots-public'],
 )
 
 
@@ -152,3 +159,41 @@ async def stream_chat(request: Request, body: ChatInput):
         media_type="text/event-stream",
         headers={'Content-Encoding': 'none'}
     )
+
+
+@public_router.post(
+    '/chat',
+    summary='Chat with chatbot',
+    description='Chat with chatbot by given id.',
+    response_model=None,
+)
+async def chat_with_chatbot(
+    chat_request: Annotated[ChatRequest, Body(...)],
+):
+    chatbot = ChatbotService.find_by_id(chat_request.chatbot_id)
+    if not chatbot:
+        raise HTTPException(status_code=404, detail='Chatbot not found')
+    # logger.info(f'chatbot found: {chatbot.id}')
+
+    # create thread id if not provided (new chat)
+    thread_id = chat_request.thread_id
+    if not thread_id:
+        thread_id = uuid.uuid4()
+    thread_id = str(thread_id)
+
+    qa_agent = QaAgentWorkflow(str(chat_request.chatbot_id))
+
+    message_id = str(uuid.uuid4())
+
+    async def generate_response():
+        async for response in qa_agent.arespond(chat_request.message, thread_id):
+            event_name = 'event: response'
+            event_data = f'data: {json.dumps({"thread_id": thread_id, "message_id": message_id, "message": response})}'
+            yield f'{event_name}\n{event_data}\n\n'
+    
+    return StreamingResponse(
+        generate_response(),
+        media_type='text/event-stream',
+        headers={'Content-Encoding': 'none'}
+    )
+

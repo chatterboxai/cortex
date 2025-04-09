@@ -78,3 +78,10 @@ class ChatbotGetAllResponse(BaseModel):
 
 
 # endregion: Get All Chatbots
+
+# region: Chat with Chatbot
+class ChatRequest(BaseModel):
+    chatbot_id: Annotated[UUID, Field(description='The ID of the chatbot')]
+    thread_id: Annotated[UUID | None, Field(description='Thread ID of the chat. Not required for new chat. Thread ID will be generated and returned in the response if not provided.', default=None)]
+    message: Annotated[str, Field(description='User message to send to the chatbot')]
+# endregion: Chat with Chatbot
