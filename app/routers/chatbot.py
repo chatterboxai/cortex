@@ -1,8 +1,8 @@
 from typing import Annotated
 import uuid
-from fastapi import APIRouter, Body, Depends, Request
+from fastapi import APIRouter, Body, Depends, Request, HTTPException
 from pydantic import BaseModel
-from app.core.limiter import limiter, HTTPException
+from app.core.limiter import limiter
 import logging
 from app.auth.dependencies import get_authenticated_user
 from app.auth.dependencies import security
@@ -28,8 +28,8 @@ router = APIRouter(
 
 # Define a separate router for unauthenticated endpoints
 public_router = APIRouter(
-    prefix='/api/v1/chatbots',
-    tags=['chatbots'],
+    prefix='/api/v1/chatbots/public',
+    tags=['chatbots-public'],
 )
 
 
@@ -182,11 +182,13 @@ async def chat_with_chatbot(
     thread_id = str(thread_id)
 
     qa_agent = QaAgentWorkflow(str(chat_request.chatbot_id))
-    
+
+    message_id = str(uuid.uuid4())
+
     async def generate_response():
         async for response in qa_agent.arespond(chat_request.message, thread_id):
             event_name = 'event: response'
-            event_data = f'data: {json.dumps({"thread_id": thread_id, "message_id": str(uuid.uuid4()), "message": response})}'
+            event_data = f'data: {json.dumps({"thread_id": thread_id, "message_id": message_id, "message": response})}'
             yield f'{event_name}\n{event_data}\n\n'
     
     return StreamingResponse(

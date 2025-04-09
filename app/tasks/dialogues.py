@@ -7,8 +7,6 @@ from sqlalchemy.orm import selectinload
 
 from app.models.dialogue import Dialogue, SyncStatus
 from app.services.dialogues import DialogueService
-from app.services.s3 import S3Service
-from app.services.parse import DocumentParserService
 from app.db.client import sync_session_factory
 from llama_index.core.node_parser import MarkdownNodeParser
 from llama_index.core.schema import Document as LlamaIndexDocument
@@ -22,31 +20,32 @@ logger = logging.getLogger(__name__)
 
 markdown_parser = MarkdownNodeParser()
 
-@shared_task(name="app.tasks.documents.process_document_queue")
-def process_document_queue():
+
+@shared_task(name="app.tasks.dialogues.process_dialogue_queue")
+def process_dialogue_queue():
     """
-    Scheduled task that runs every 10 seconds to find documents
+    Scheduled task that runs every interval to find dialogues 
     that need processing and queue individual processing tasks.
     """
-    logger.info("Checking for documents that need processing")
+    logger.info("Checking for dialogues that need processing")
     
     try:
-        dialogues = DialogueService.get_dialogues_to_sync()
+        dialogues: list[Dialogue] = DialogueService.get_dialogues_to_sync()
         
         # Queue each dialogue for individual processing
         for dialogue in dialogues:
             dia_id = dialogue.id
             process_dialogue.delay(str(dia_id))
             
-        return f"Queued {len(dialogues)} documents for syncing to vector store"
+        return f"Queued {len(dialogues)} dialogues for syncing to vector store"
     
     except Exception as e:
-        logger.error(f"Error queueing documents to sync to vector store: {e}")
+        logger.error(f"Error queueing dialogues to sync to vector store: {e}")
         raise
 
 
 @shared_task(
-    name="app.tasks.documents.process_document",
+    name="app.tasks.dialogues.process_dialogue",
     bind=True,
     autoretry_for=(Exception,),
     retry_backoff=True,
@@ -57,12 +56,8 @@ def process_dialogue(self: Task, dialogue_id: str) -> None:
     """
     Process a single dialogue.
     
-    1. Retrieves the dialogue from the database
-    2. Gets a signed URL from S3
-    3. Uses Mistral OCR to parse text
-    
     Args:
-        document_id: UUID string of the dialogue to process
+        dialogue_id: UUID string of the dialogue to process
     """
     # Check if this is a retry
     if self.request.retries:
@@ -78,41 +73,47 @@ def process_dialogue(self: Task, dialogue_id: str) -> None:
     logger.info(f"Processing dialogue {dialogue_id}")
     
     # Convert string to UUID
-    dia_uuid = UUID(dialogue_id)
+    _dialogue_id = UUID(dialogue_id)
     
     with sync_session_factory() as session:
         # load chatbot when dialogue is loaded
-        query = select(Dialogue).options(selectinload(Dialogue.chatbot)).where(Dialogue.id == dia_uuid)
+        query = select(Dialogue).options(selectinload(Dialogue.chatbot)).where(Dialogue.id == _dialogue_id)
         dialogue = session.execute(query).scalar_one_or_none()
         if not dialogue:
+            logger.error(f"Dialogue {_dialogue_id} not found")
             return
         try:
             
             dialogue.sync_status = SyncStatus.IN_PROGRESS
             session.commit()
             
-            logger.debug(f"Document chatbot settings: {dialogue.chatbot.settings}")
+            logger.debug(f"Dialogue chatbot settings: {dialogue.chatbot.settings}")
             chatbot_settings = ChatbotSettings.model_validate(dialogue.chatbot.settings)
+            logger.debug("Chatbot settings validated")
+
             em_settings = EmbeddingModel.model_validate(chatbot_settings.embedding_model)
+            logger.debug("Embedding model validated")
+
             vector_store = VectorStoreService.get_vector_store(str(dialogue.chatbot.id), em_settings.dimensions)
-            logger.debug(f"Vector store gotten")
+            logger.debug("Vector store gotten")
             
-            dia_to_parse = LlamaIndexDocument(id_=str(dia_uuid), text=dialogue.questions)
-            # nodes = markdown_parser.get_nodes_from_documents([doc_to_parse])
-            # vsi.add_nodes(nodes)
+            questions = "\n".join(dialogue.questions)
+            text_to_sync = f"Questions: {questions}\n\nAnswer: {dialogue.answer}\n\n"
+            doc_to_sync = LlamaIndexDocument(id_=str(_dialogue_id), text=text_to_sync)
 
             embedding_model = EmbeddingsService.get_embedding_model(em_settings)
 
-            logger.debug('running ingestion pipeline to vector store')
+            logger.debug('running ingestion pipeline to sync dialogue to vector store')
+
             pipeline = IngestionPipeline(
                 transformations=[
-                    MarkdownNodeParser(),
                     embedding_model
                 ],
                 vector_store=vector_store
             )
 
-            pipeline.run(documents=[dia_to_parse])
+            pipeline.run(documents=[doc_to_sync])  # TODO: this doesnt delete previous documents but ignore for now
+            logger.debug('pipeline run complete')
             
             # Update dialogue status to success using synchronous method
             dialogue.sync_status = SyncStatus.SYNCED

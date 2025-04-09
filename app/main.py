@@ -70,7 +70,7 @@ app.add_middleware(
 app.add_middleware(
     CognitoAuthMiddleware,
 
-    exclude_paths=['/docs', '/redoc', '/openapi.json', '/', '/health', '/health/db', '/chat', '/api/v1/chatbots/chat'],
+    exclude_paths=['/docs', '/redoc', '/openapi.json', '/', '/health', '/health/db', '/chat', '/api/v1/chatbots/public/chat'],
     exclude_methods=['OPTIONS'],
 
 )

@@ -97,19 +97,19 @@ async def find_dialogue_by_chatbot_endpoint(
     
     return DialogueGetAllFromChatbotResponse(dialogues=dialogues)
 
-@router.get(
-    "/question/{question}/{chatbot_id}", 
-    response_model=DialogueAnswerResponse,
-    summary="Get Dialogue answer to question",
-    description="find answer to the question from the dialogue object using chatbot"
-)
-async def find_dialogue_answer_endpoint(
-    question: str,
-    chatbot_id: uuid.UUID
-):
-    dialogue = await DialogueService.find_answer_by_question(question, chatbot_id)
+# @router.get(
+#     "/question/{question}/{chatbot_id}", 
+#     response_model=DialogueAnswerResponse,
+#     summary="Get Dialogue answer to question",
+#     description="find answer to the question from the dialogue object using chatbot"
+# )
+# async def find_dialogue_answer_endpoint(
+#     question: str,
+#     chatbot_id: uuid.UUID
+# ):
+#     dialogue = await DialogueService.find_answer_by_question(question, chatbot_id)
     
-    return DialogueAnswerResponse(answer=dialogue.answer)
+#     return DialogueAnswerResponse(answer=dialogue.answer)
 
 # @router.get(
 #     "/dialogue/user", 

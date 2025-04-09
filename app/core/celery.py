@@ -35,6 +35,10 @@ celery_app.conf.beat_schedule = {
         'task': 'app.tasks.documents.process_document_queue',
         'schedule': 10.0,  # Run every 10 seconds
     },
+    'sync-dialogues-every-10-seconds': {
+        'task': 'app.tasks.dialogues.process_dialogue_queue',
+        'schedule': 10.0,  # Run every 10 seconds
+    },
 }
 
 # Include all task modules here
@@ -42,6 +46,8 @@ celery_app.conf.task_routes = {
     # 'app.tasks.documents.*': {'queue': 'documents'},
     'app.tasks.documents.process_document': {'queue': 'celery'},
     'app.tasks.documents.process_document_queue': {'queue': 'celery'},
+    'app.tasks.dialogues.process_dialogue': {'queue': 'celery'},
+    'app.tasks.dialogues.process_dialogue_queue': {'queue': 'celery'},
 }
 
 # Set timezone
@@ -53,7 +59,7 @@ celery_app.conf.task_serializer = 'json'
 celery_app.conf.result_serializer = 'json'
 
 # Import tasks directly to ensure they're registered
-import app.tasks.documents  # noqa
+import app.tasks  # noqa
 
 # Automatically discover tasks in the project
 celery_app.autodiscover_tasks(['app.tasks']) 
