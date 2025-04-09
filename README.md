@@ -1,16 +1,22 @@
-# chatterbox-backend
+# Cortex
 
 This is the backend for the Chatterbox project. Uses FastAPI as the backend framework and SQLAlchemy as the ORM.
 
-## Set up environment variables
+## Development
+
+### Set up environment variables
+
+We use direnv to manage environment variables, it can be installed [here](https://direnv.net/docs/installation.html)
 
 - `cp .envrc.example .envrc`
 - `direnv allow .`
   Fill in the environment variables in the `.envrc` file.
 
-## Installation
+### Installation
 
-- install `uv` [here](https://docs.astral.sh/uv/getting-started/installation/#homebrew) for dependency management
+#### Prerequisites
+
+- Install `uv` [here](https://docs.astral.sh/uv/getting-started/installation/#homebrew) for dependency management
 - use python 3.12 if you don't have it
   - `uv python install 3.12.9`
 - activate the venv
@@ -18,26 +24,43 @@ This is the backend for the Chatterbox project. Uses FastAPI as the backend fram
   - `source .venv/bin/activate` to use the venv
 - run `uv sync` within the virtual environment to sync the dependencies from the uv.lock file into your virtual environment
 
-## Development
+### Running the development server
 
-- You should always be in the virtual environment when developing e.g. this `(chatterbox-backend) $` should be present in your terminal
+- You should always be in the virtual environment when developing e.g. this `(cortex) $` should be present in your terminal
 - Activate the virtual environment if you are not already in it
   - `source .venv/bin/activate`
-- Load the environment variables using direnv. Install direnv if you don't have it [here](https://direnv.net/docs/installation.html)
-  - `direnv allow .`
-- `uv run uvicorn app.main:app --reload` to start the development server
+- Load the environment variables using `direnv allow .`
+- `fastapi dev app/main.py` to start the development server. This will automatically reload when you make changes to the code.
 
-- use the following to get a cognito token
-- aws cognito-idp initiate-auth \
+### Getting a Cognito token
+
+- Use the following to get a cognito access token to simulate a user login to access authenticated endpoints
+
+```sh
+aws cognito-idp initiate-auth \
    --auth-flow USER_PASSWORD_AUTH \
    --client-id ${COGNITO_CLIENT_ID} \
   --auth-parameters USERNAME=${username},PASSWORD=${password} \
    --query 'AuthenticationResult.AccessToken' \
   --output text
+```
 
 ## Running Celery
 
-Celery beat is a scheduler that syncs documents uploaded to the vector store at a given interval.
+We use Celery to run background tasks and a celery beat to schedule tasks e.g. syncs dialogues and documents uploaded to the vector store at a fixed interval.
 
-- `celery -A app.core.celery worker --loglevel=info` to start the celery worker
-- `celery -A app.core.celery beat --loglevel=info` to start the celery beat
+### Command to start the celery worker
+
+Run this in the virtual environment in a separate terminal
+
+```sh
+celery -A app.core.celery worker --loglevel=info
+```
+
+### Command to start the celery beat
+
+Run this in the virtual environment in a separate terminal
+
+```sh
+celery -A app.core.celery beat --loglevel=info
+```

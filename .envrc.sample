@@ -2,21 +2,36 @@
 : "${ENVIRONMENT:=DEV}"
 export ENVIRONMENT
 
+# AWS
+export AWS_ACCESS_KEY_ID="" # fill in with your AWS access key id
+export AWS_SECRET_ACCESS_KEY="" # fill in with your AWS secret access key
+export AWS_PAGER=""
+export AWS_REGION="" # fill in with your AWS region
+
+# Cognito
+export COGNITO_USER_POOL_ID="" # fill in with your Cognito user pool id
+export COGNITO_CLIENT_ID="" # fill in with your Cognito client id
+
 # Database
-export DB_USER=""
-export DB_PASSWORD=""
-export DB_HOST=""
+export DB_USER="" # fill in with your database user
+export DB_PASSWORD="" # fill in with your database password
+export DB_HOST="localhost" # use this when using docker compose locally e.g. for testing db migrations etc
 export DB_PORT="5432"
 export DB_NAME="chatterbox"
 export DATABASE_URL="postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 
-# AWS
-export AWS_PAGER=""
-export AWS_PROFILE="chatterbox"
-export COGNITO_USER_POOL_ID=""
-export COGNITO_CLIENT_ID=""
-export AWS_REGION=""
+# Mistral
+export MISTRAL_API_KEY="" # fill in with your Mistral API key
 
-# (For ease of local testing) Backend user login details for Authentication with Cognito
-export username=''
-export password=''
+# OpenAI (could be obtained from the user in the future)
+export OPENAI_API_KEY="" # fill in with your OpenAI API key
+
+# Redis
+export REDIS_URL="redis://redis:6379/0"
+
+# S3
+export S3_BUCKET_NAME="" # fill in with your S3 bucket name
+
+# User login details for Authentication with Cognito
+export username='' # fill in with the username you used to sign up for an account
+export password='' # fill in with the password you used to sign up for an account
