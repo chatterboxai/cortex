@@ -58,21 +58,23 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-
-    allow_origins=['*'],  # In production, replace with specific origins
-
+    allow_origins=["http://localhost:3000", 
+                  "https://prism-topaz.vercel.app",
+    ]
     allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=600,  # Cache preflight requests for 10 minutes
 )
 
 # Add Cognito authentication middleware
 app.add_middleware(
     CognitoAuthMiddleware,
-
-    exclude_paths=['/docs', '/redoc', '/openapi.json', '/', '/health', '/health/db', '/api/v1/chatbots/public/chat-test', '/api/v1/chatbots/public/chat'],
+    exclude_paths=['/docs', '/redoc', '/openapi.json', '/', '/health', 
+                  '/health/db', '/api/v1/chatbots/public/chat-test', 
+                  '/api/v1/chatbots/public/chat'],
     exclude_methods=['OPTIONS'],
-
 )
 
 # Include routers
