@@ -59,8 +59,7 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", 
-                  "https://prism-topaz.vercel.app",
-    ]
+                  "https://prism-topaz.vercel.app"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
