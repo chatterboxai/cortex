@@ -1,9 +1,18 @@
 import logging
 import uuid
+from uuid import UUID
 from app.db.client import async_session_factory, sync_session_factory
 from app.models.document import Document, SyncStatus
 from app.schemas.document import DocumentCreate
 from sqlalchemy import select
+from app.services.s3 import S3Service
+from app.services.parse import DocumentParserService
+from app.services.rag.embeddings import EmbeddingsService
+from app.services.rag.vectorstore import VectorStoreService
+from app.schemas.chatbot_settings import ChatbotSettings, EmbeddingModel
+from llama_index.core.node_parser import MarkdownNodeParser
+from llama_index.core.schema import Document as LlamaIndexDocument
+from llama_index.core.ingestion import IngestionPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -88,3 +97,47 @@ class DocumentService:
             
             result = session.execute(query)
             return list(result.scalars().all())
+
+    @classmethod
+    def sync_to_vector_store(cls, document_id: UUID):
+        logger.info(f"Syncing document {document_id} to vector store")
+        from sqlalchemy.orm import Session
+        from app.db.client import sync_engine
+
+        with Session(sync_engine) as session:
+            document = session.get(Document, document_id)
+            if not document:
+                raise ValueError("Document not found")
+
+            if document.mime_type != "application/pdf":
+                document.sync_status = SyncStatus.SYNCED
+                document.sync_msg = 'Only PDF documents are supported for now'
+                session.commit()
+                return
+
+            document.sync_status = SyncStatus.IN_PROGRESS
+            session.commit()
+
+            signed_url = S3Service.generate_presigned_url(document.file_url)
+            parsed_markdown = DocumentParserService.parse_pdf_to_markdown(signed_url)
+
+            chatbot_settings = ChatbotSettings.model_validate(document.chatbot.settings)
+            em_settings = EmbeddingModel.model_validate(chatbot_settings.embedding_model)
+            vector_store = VectorStoreService.get_vector_store(str(document.chatbot.id), em_settings.dimensions)
+            embedding_model = EmbeddingsService.get_embedding_model(em_settings)
+
+            doc_to_parse = LlamaIndexDocument(id_=str(document_id), text=parsed_markdown)
+
+            pipeline = IngestionPipeline(
+                transformations=[MarkdownNodeParser(), embedding_model],
+                vector_store=vector_store
+            )
+            pipeline.run(documents=[doc_to_parse])
+
+            document.sync_status = SyncStatus.SYNCED
+            session.commit()
+
+    @staticmethod
+    def get_by_id(document_id: UUID) -> Document:
+        with sync_session_factory() as session:
+            return session.get(Document, document_id)
