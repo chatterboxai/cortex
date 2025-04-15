@@ -10,6 +10,8 @@ from app.models.users import User
 from app.services.dialogues import DialogueService
 #from app.services.dialogues import
 
+from app.tasks.dialogues import process_dialogue_queue_temporal
+
 logger = logging.getLogger(__name__)
 
 # Define router
@@ -35,6 +37,8 @@ async def create_dialogue_endpoint(
         questions=dialogue_data.questions,
         answer=dialogue_data.answer
     )
+
+    await process_dialogue_queue_temporal(new_dialogue.id)
     
     return new_dialogue
 

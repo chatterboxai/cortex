@@ -17,6 +17,8 @@ import uuid
 from app.services.chatbot import ChatbotService
 from app.models.document import SyncStatus
 
+from app.tasks.documents import process_document_queue_temporal
+
 logger = logging.getLogger(__name__)
 
 # Define router
@@ -78,7 +80,8 @@ async def create_document(
                 mime_type=file.content_type or 'application/octet-stream'
             )
         )
-        
+        await process_document_queue_temporal(document.id)
+
         return document
     except Exception as e:
         logger.exception(f"Error creating document: {e}")
