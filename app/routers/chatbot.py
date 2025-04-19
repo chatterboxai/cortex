@@ -73,7 +73,8 @@ async def create_chatbot(
         table_name=str(chatbot.id),
         embed_dim=chatbot_settings.embedding_model.dimensions,
     )
-    return chatbot
+    return ChatbotCreateResponse.model_validate(chatbot)
+
 
 
 @router.get(
