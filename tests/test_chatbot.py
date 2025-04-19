@@ -118,38 +118,39 @@ async def mock_chatbot(client, db_session):
 #     db_session.add(fake_user)
 #     await db_session.commit()
 
-# @pytest.mark.asyncio
-# async def test_create_chatbot(client, db_session):
-#     fake_user = User(cognito_id="fake-cognito-id", handle="testuser")
-#     db_session.add(fake_user)
-#     await db_session.commit()
-#     chatbot_data = {
-#         "name": "Test Chatbot",
-#         "description":"A description",
-#         "is_public": True,
-#         "settings": {
-#             "embedding_model": {
-#                 "provider": "openai",
-#                 "name": "text-embedding-3-large",
-#                 "dimensions": 3072
-#             }
-#         }
-#     }
-#     headers = {
-#         "Authorization": "Bearer fake.token.value"
-#     }
-#     response = client.post(
-#         "/api/v1/chatbots/",
-#         json=chatbot_data,
-#         headers=headers 
-#     )
-#     print("RESPONSE:", response.status_code, response.text)
+@pytest.mark.asyncio
+async def test_create_chatbot(client, db_session):
+    fake_user = User(cognito_id="fake-cognito-id", handle="testuser")
+    db_session.add(fake_user)
+    await db_session.commit()
+    chatbot_data = {
+        "name": "Test Chatbot",
+        "description":"A description",
+        "is_public": True,
+        "settings": {
+            "embedding_model": {
+                "provider": "openai",
+                "name": "text-embedding-3-large",
+                "dimensions": 3072
+            }
+        }
+    }
+    headers = {
+        "Authorization": "Bearer fake.token.value"
+    }
+    response = client.post(
+        "/api/v1/chatbots/",
+        json=chatbot_data,
+        headers=headers 
+    )
+    print("RESPONSE:", response.status_code, response.text)
 
-#     assert response.status_code == 200
-#     assert "id" in response.json()
-#     assert response.json()["name"] == chatbot_data["name"]
-#     assert response.json()["description"] == chatbot_data["description"]
-#     assert response.json()["is_public"] == chatbot_data["is_public"]
+    assert response.status_code == 200
+    assert "id" in response.json()
+    assert response.json()["name"] == chatbot_data["name"]
+    assert response.json()["description"] == chatbot_data["description"]
+    assert response.json()["is_public"] == chatbot_data["is_public"]
+
 # @pytest.mark.asyncio
 # async def test_create_chatbot(client, db_session):
 #     headers = {
