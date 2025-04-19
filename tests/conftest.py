@@ -14,6 +14,7 @@ from app.auth import middleware
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from app.models.base import Base
+from app.services.users import create_user, find_user_by_cognito_id
 import pytest_asyncio
 import uuid
 
@@ -93,12 +94,19 @@ def mock_verify_cognito_token(monkeypatch):
     monkeypatch.setattr(cognito, "verify_cognito_token", fake_verify_cognito_token)
     monkeypatch.setattr(middleware, "verify_cognito_token", fake_verify_cognito_token)
 
+# async def override_get_authenticated_user():
+#     """Override dependency to return fake user."""
+#     return User(
+#         cognito_id="fake-cognito-id",
+#         handle="testuser"
+#     )
+
 async def override_get_authenticated_user():
-    """Override dependency to return fake user."""
-    return User(
-        cognito_id="fake-cognito-id",
-        handle="testuser"
-    )
+    user = await find_user_by_cognito_id("fake-cognito-id")
+    if not user:
+        user = await create_user("fake-cognito-id", "testuser")
+    return user
+
 
 class FakeSecurity:
     """Mock security dependency."""
