@@ -8,8 +8,8 @@ from app.models.users import User
 @pytest.mark.asyncio
 async def test_get_user_profile(client, db_session):
     # fake_user = User(
-    #     cognito_id="fake-cognito-id23",
-    #     handle="testuser23"
+    #     cognito_id="fake-cognito-id",
+    #     handle="testuser"
     # )
     # db_session.add(fake_user)
     # await db_session.commit()
