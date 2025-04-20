@@ -10,7 +10,7 @@ from app.models.users import User
 from app.services.dialogues import DialogueService
 #from app.services.dialogues import
 
-from app.tasks.dialogues import process_dialogue_queue_temporal
+# from app.tasks.dialogues import process_dialogue_queue_temporal
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ async def create_dialogue_endpoint(
         answer=dialogue_data.answer
     )
 
-    await process_dialogue_queue_temporal(new_dialogue.id)
+    # await process_dialogue_queue_temporal(new_dialogue.id)
     
     return new_dialogue
 
@@ -80,7 +80,7 @@ async def find_dialogue_endpoint(
     summary="Get Dialogue",
     description="find the dialogue object using id"
 )
-async def find_dialogue_endpoint(
+async def delete_dialogue_endpoint(
     dialogue_id: uuid.UUID
 ):
     dialogue = await DialogueService.delete_dialogue_by_id(dialogue_id)

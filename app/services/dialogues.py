@@ -2,19 +2,11 @@ import logging
 from typing import Sequence
 import uuid
 from uuid import UUID
-from app.models.chatbot import Chatbot
-from app.models.users import User
 from sqlalchemy import select
 
 from app.models.dialogue import Dialogue, SyncStatus
 from app.db.client import async_session_factory, sync_session_factory
-from sqlalchemy.orm import selectinload
 from sqlalchemy import select
-from app.schemas.chatbot_settings import ChatbotSettings, EmbeddingModel
-from app.services.rag.embeddings import EmbeddingsService
-from app.services.rag.vectorstore import VectorStoreService
-from llama_index.core.schema import Document as LlamaIndexDocument
-from llama_index.core.ingestion import IngestionPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -154,49 +146,49 @@ class DialogueService:
             result = session.execute(query)
             return list(result.scalars().all())
         
-    @classmethod
-    def sync_to_vector_store(cls, dialogue_id: UUID):
-        logger.info(f"Processing dialogue {dialogue_id}")
+    # @classmethod
+    # def sync_to_vector_store(cls, dialogue_id: UUID):
+    #     logger.info(f"Processing dialogue {dialogue_id}")
 
-        with sync_session_factory() as session:
-            query = select(Dialogue).options(selectinload(Dialogue.chatbot)).where(Dialogue.id == dialogue_id)
-            dialogue = session.execute(query).scalar_one_or_none()
+    #     with sync_session_factory() as session:
+    #         query = select(Dialogue).options(selectinload(Dialogue.chatbot)).where(Dialogue.id == dialogue_id)
+    #         dialogue = session.execute(query).scalar_one_or_none()
 
-            if not dialogue:
-                logger.error(f"Dialogue {dialogue_id} not found")
-                return
+    #         if not dialogue:
+    #             logger.error(f"Dialogue {dialogue_id} not found")
+    #             return
 
-            try:
-                dialogue.sync_status = SyncStatus.IN_PROGRESS
-                session.commit()
+    #         try:
+    #             dialogue.sync_status = SyncStatus.IN_PROGRESS
+    #             session.commit()
 
-                chatbot_settings = ChatbotSettings.model_validate(dialogue.chatbot.settings)
-                em_settings = EmbeddingModel.model_validate(chatbot_settings.embedding_model)
-                vector_store = VectorStoreService.get_vector_store(str(dialogue.chatbot.id), em_settings.dimensions)
+    #             chatbot_settings = ChatbotSettings.model_validate(dialogue.chatbot.settings)
+    #             em_settings = EmbeddingModel.model_validate(chatbot_settings.embedding_model)
+    #             vector_store = VectorStoreService.get_vector_store(str(dialogue.chatbot.id), em_settings.dimensions)
 
-                questions = "\n".join(dialogue.questions)
-                text_to_sync = f"Questions: {questions}\n\nAnswer: {dialogue.answer}\n\n"
-                doc_to_sync = LlamaIndexDocument(id_=str(dialogue_id), text=text_to_sync)
+    #             questions = "\n".join(dialogue.questions)
+    #             text_to_sync = f"Questions: {questions}\n\nAnswer: {dialogue.answer}\n\n"
+    #             doc_to_sync = LlamaIndexDocument(id_=str(dialogue_id), text=text_to_sync)
 
-                embedding_model = EmbeddingsService.get_embedding_model(em_settings)
+    #             embedding_model = EmbeddingsService.get_embedding_model(em_settings)
 
-                pipeline = IngestionPipeline(
-                    transformations=[embedding_model],
-                    vector_store=vector_store
-                )
-                pipeline.run(documents=[doc_to_sync])
+    #             pipeline = IngestionPipeline(
+    #                 transformations=[embedding_model],
+    #                 vector_store=vector_store
+    #             )
+    #             pipeline.run(documents=[doc_to_sync])
 
-                dialogue.sync_status = SyncStatus.SYNCED
-                session.commit()
+    #             dialogue.sync_status = SyncStatus.SYNCED
+    #             session.commit()
 
-                logger.info(f"Dialogue {dialogue_id} synced to vector store")
+    #             logger.info(f"Dialogue {dialogue_id} synced to vector store")
 
-            except Exception as e:
-                logger.error(f"Failed to sync dialogue {dialogue_id}: {e}")
-                dialogue.sync_status = SyncStatus.FAILED
-                dialogue.sync_msg = str(e)
-                session.commit()
-                raise
+    #         except Exception as e:
+    #             logger.error(f"Failed to sync dialogue {dialogue_id}: {e}")
+    #             dialogue.sync_status = SyncStatus.FAILED
+    #             dialogue.sync_msg = str(e)
+    #             session.commit()
+    #             raise
     @staticmethod
     def get_by_id(dialogue_id: UUID) -> Dialogue:
         with sync_session_factory() as session:

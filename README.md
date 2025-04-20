@@ -30,7 +30,33 @@ We use direnv to manage environment variables, it can be installed [here](https:
 - Activate the virtual environment if you are not already in it
   - `source .venv/bin/activate`
 - Load the environment variables using `direnv allow .`
-- `fastapi dev app/main.py` to start the development server. This will automatically reload when you make changes to the code.
+
+#### Starting the database
+
+```bash
+docker compose up -d
+```
+
+#### Start the web server
+
+```bash
+fastapi dev app/main.py
+```
+
+#### Running the temporal server
+
+Open another terminal and run the following command to start the temporal server
+
+```bash
+temporal server start-dev
+```
+
+#### Running the temporal worker
+
+```bash
+chmod +x app/temporal/run_worker.sh
+app/temporal/run_worker.sh
+```
 
 ### Getting a Cognito token
 
@@ -45,9 +71,19 @@ aws cognito-idp initiate-auth \
   --output text
 ```
 
-## Running Celery
+### running the test cases
 
-We use Celery to run background tasks and a celery beat to schedule tasks e.g. syncs dialogues and documents uploaded to the vector store at a fixed interval.
+- Activate the virtual environment if you are not already in it
+  - `source .venv/bin/activate`
+- run `uv pip install -e ".[dev]"`
+- run `pytest`
+- current tests that work is test get user profile, test create chatbot valid and invalid
+
+<<<<<<< HEAD
+
+### Scenario walkthrough
+
+=======
 
 ### Command to start the celery worker
 
@@ -66,6 +102,25 @@ celery -A app.core.celery beat --loglevel=info
 ```
 
 ### running the test cases
+
+- Activate the virtual environment if you are not already in it
+  - `source .venv/bin/activate`
+- run `uv pip install -e ".[dev]"`
+- run `pytest`
+- current tests that work is test get user profile, test create chatbot valid and invalid
+  > > > > > > > df70495 (added test stuff running to readme)
+
+### running the test cases
+
+- Activate the virtual environment if you are not already in it
+  - `source .venv/bin/activate`
+- run `uv pip install -e ".[dev]"`
+- run `pytest`
+- current tests that work is test get user profile, test create chatbot valid and invalid
+  > > > > > > > df70495 (added test stuff running to readme)
+
+### running the test cases
+
 - Activate the virtual environment if you are not already in it
   - `source .venv/bin/activate`
 - run `uv pip install -e ".[dev]"`

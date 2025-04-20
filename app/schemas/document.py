@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field, ConfigDict
 from uuid import UUID
 from app.models.document import SyncStatus
 
-
 # region: Base
 class DocumentBaseResponse(BaseModel):
     id: Annotated[UUID, Field(description='The ID of the document')]
@@ -61,3 +60,9 @@ class DocumentCreateResponse(DocumentBaseResponse):
 
 class DocumentGetAllFromChatbotResponse(BaseModel):
     documents: Annotated[list[DocumentBaseResponse], Field(description='The list of dialogues for the chatbot')]
+
+
+class DocumentSyncStatusUpdateRequest(BaseModel):
+    document_id: Annotated[UUID, Field(description='The ID of the document to update')]
+    sync_status: Annotated[SyncStatus, Field(description='The new synchronization status of the document')]
+    sync_msg: Annotated[str, Field(description='The message to update the synchronization status')]

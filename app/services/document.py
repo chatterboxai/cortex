@@ -39,14 +39,14 @@ class DocumentService:
             return document
             
     @classmethod
-    async def aget_document(cls, document_id: uuid.UUID) -> Document:
+    async def aget_document(cls, document_id: uuid.UUID) -> Document | None:
         """Get a document by ID."""
         async with async_session_factory() as session:
             document = await session.get(Document, document_id)
             return document
     
     @classmethod
-    def get_document(cls, document_id: uuid.UUID) -> Document:
+    def get_document(cls, document_id: uuid.UUID) -> Document | None:
         """Synchronous version of get_document."""
         with sync_session_factory() as session:
             document = session.get(Document, document_id)

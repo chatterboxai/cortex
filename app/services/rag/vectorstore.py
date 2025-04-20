@@ -30,7 +30,7 @@ class VectorStoreService:
         return vector_store
     
     @staticmethod
-    def create_vector_store(table_name: str, embed_dim: int, **kwargs: Any) -> PGVectorStore:
+    async def create_vector_store(table_name: str, embed_dim: int, **kwargs: Any) -> None:
         vector_store = PGVectorStore.from_params(
             host=DB_HOST,
             port=DB_PORT,
@@ -43,6 +43,4 @@ class VectorStoreService:
             **kwargs
         )
         vector_store._initialize()
-        vector_store.close()
-
-        return vector_store
+        await vector_store.close()

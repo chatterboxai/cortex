@@ -69,7 +69,7 @@ async def create_chatbot(
     chatbot = await ChatbotService.create(create_model)
     logger.info(f'chatbot settings: {chatbot_settings}')
     # create vector store
-    VectorStoreService.create_vector_store(
+    await VectorStoreService.create_vector_store(
         table_name=str(chatbot.id),
         embed_dim=chatbot_settings.embedding_model.dimensions,
     )

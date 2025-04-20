@@ -17,8 +17,10 @@ import uuid
 from app.services.chatbot import ChatbotService
 from app.models.document import SyncStatus
 
-from app.tasks.documents import process_document_queue_temporal
-
+# from app.tasks.documents import process_document_queue_temporal
+from app.temporal.client import get_client
+from app.temporal.workflows import DocumentSyncWorkflow
+from app.temporal.shared import SYNC_DOCUMENT_TASK_QUEUE
 logger = logging.getLogger(__name__)
 
 # Define router
@@ -58,19 +60,15 @@ async def create_document(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User does not have permission to access this chatbot"
         )
-    print("file.filename:", file.filename)
-    print("file.content_type:", file.content_type)
-    print("title:", title)
-    print("chatbot_id:", chatbot_id)
 
     # Create a document model and upload the file
     try:
         # upload to s3
         key = file.filename or str(uuid.uuid4())
-        print(f"Generated S3 key: {key}")
 
         await S3Service.upload_file(file, key)
-        print("complete s3 upload")
+        logger.debug(f'File uploaded to S3: {key}')
+
         # create document
         document = await DocumentService.acreate(
             DocumentCreate(
@@ -80,7 +78,16 @@ async def create_document(
                 mime_type=file.content_type or 'application/octet-stream'
             )
         )
-        await process_document_queue_temporal(document.id)
+        # await process_document_queue_temporal(document.id)
+        
+        # start temporal workflow to sync document
+        client = await get_client()
+        await client.start_workflow(
+                DocumentSyncWorkflow.run,
+                document.id,
+                id=f"document-sync-{document.id}",
+                task_queue=SYNC_DOCUMENT_TASK_QUEUE
+            )
 
         return document
     except Exception as e:
