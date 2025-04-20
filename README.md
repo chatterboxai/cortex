@@ -79,4 +79,29 @@ aws cognito-idp initiate-auth \
 - run `pytest`
 - current tests that work is test get user profile, test create chatbot valid and invalid
 
+<<<<<<< HEAD
 ### Scenario walkthrough
+=======
+### Command to start the celery worker
+
+Run this in the virtual environment in a separate terminal
+
+```sh
+celery -A app.core.celery worker --loglevel=info
+```
+
+### Command to start the celery beat
+
+Run this in the virtual environment in a separate terminal
+
+```sh
+celery -A app.core.celery beat --loglevel=info
+```
+
+### running the test cases
+- Activate the virtual environment if you are not already in it
+  - `source .venv/bin/activate`
+- run `uv pip install -e ".[dev]"`
+- run `pytest`
+- current tests that work is test get user profile, test create chatbot valid and invalid
+>>>>>>> df70495 (added test stuff running to readme)
