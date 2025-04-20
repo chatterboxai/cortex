@@ -83,7 +83,7 @@ class DocumentSyncWorkflow:
             start_to_close_timeout=timedelta(seconds=30),
             retry_policy=self.document_retry_policy,
         )
-        # return parsed_markdown[:100]
+        
         return f"Document {str(document_id)} synced"
 
 # @workflow.defn
